@@ -14,6 +14,7 @@ This project demonstrates desktop automation using Selenium WebDriver and Sikuli
 - [Test Reports](#test-reports)
 - [Screenshots](#screenshots)
 - [How It Works](#how-it-works)
+- [Dynamic Test Execution](#dynamic-test-execution)
 
 ## Project Overview
 
@@ -56,14 +57,20 @@ wampautomation/
 │       └── java/
 │           └── com/
 │               └── automation/
-│                   └── PlaySongWithAutomation.java
+│                   ├── PlaySongWithAutomation.java
+│                   ├── TestNGXmlGenerator.java
+│                   ├── TestNGExecutor.java
+│                   └── DynamicTestNGListener.java
 ├── test-output/
 │   ├── ExtentReport.html
 │   └── screenshots/
 │       ├── TestCase1-after_start_button_click_*.png
+│       ├── TestCase2-after_typing_song_name_*.png
 │       └── TestCase3-after_pressing_enter_*.png
 ├── pom.xml
 ├── testng.xml
+├── dynamic-testng.xml
+├── run-tests.bat
 └── TestcaseToRun.config
 ```
 
@@ -123,6 +130,14 @@ The project uses the following dependencies (defined in `pom.xml`):
     <version>7.8.0</version>
     <scope>test</scope>
   </dependency>
+  
+  <!-- Reflections for scanning test classes -->
+  <dependency>
+    <groupId>org.reflections</groupId>
+    <artifactId>reflections</artifactId>
+    <version>0.10.2</version>
+    <scope>test</scope>
+  </dependency>
 </dependencies>
 ```
 
@@ -158,43 +173,56 @@ The `testng.xml` file configures which test cases to run:
 </suite>
 ```
 
-To run all test cases without specifying individual methods, modify the XML to:
+### Dynamic TestNG XML Configuration
 
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
-<suite name="WAMP Automation Suite">
-  <test name="Desktop Automation Tests">
-    <classes>
-      <class name="com.automation.PlaySongWithAutomation" />
-    </classes>
-  </test>
-</suite>
-```
+The `dynamic-testng.xml` file is automatically generated based on the `TestcaseToRun.config` file. This allows for flexible test execution without modifying the source code.
 
 ### TestcaseToRun.config
 
-The `TestcaseToRun.config` file contains a simple configuration value:
+The `TestcaseToRun.config` file controls which test cases are executed. It supports two formats:
 
-```
-ALL
-```
+1. **Run all tests** - Simply add the keyword `ALL` to run all test methods in all classes:
+   ```
+   ALL
+   ```
 
-This indicates that all test cases should be run.
+2. **Run specific tests** - List the fully qualified method names to run specific test methods:
+   ```
+   com.automation.PlaySongWithAutomation.testCase1_OpenWindowsStartMenu
+   com.automation.PlaySongWithAutomation.testCase3_SelectSongFile
+   ```
+
+You can combine both approaches. If `ALL` is present anywhere in the file, all tests will run regardless of other entries.
 
 ## Test Execution
 
-To run the tests, use Maven:
+### Using the Batch File (Recommended)
+
+The easiest way to run tests is using the provided batch file:
 
 ```bash
-mvn clean test
+run-tests.bat
 ```
 
-This will:
-1. Clean the project
-2. Compile the code
-3. Run the tests specified in the TestNG XML file
-4. Generate test reports
+This batch file:
+1. Generates the dynamic TestNG XML based on TestcaseToRun.config
+2. Runs the tests using the generated XML file
+
+### Using Maven Directly
+
+Alternatively, you can use Maven commands:
+
+```bash
+# Generate the dynamic TestNG XML
+mvn exec:java -Dexec.mainClass="com.automation.TestNGXmlGenerator" -Dexec.classpathScope=test
+
+# Run tests with the generated XML
+mvn test -DsuiteXmlFile=dynamic-testng.xml -DskipTests=false
+```
+
+This approach ensures that:
+1. The dynamic TestNG XML is generated based on the current TestcaseToRun.config
+2. Tests are executed only once using the generated XML
 
 ## Test Reports
 
@@ -283,6 +311,42 @@ takeScreenshot("TestCase1", "after_start_button_click");
 // Log test progress
 test.log(Status.INFO, "Windows Start Button clicked successfully");
 ```
+
+## Dynamic Test Execution
+
+The project includes a dynamic test execution system that reads the `TestcaseToRun.config` file to determine which tests to run:
+
+### How Dynamic Test Execution Works
+
+1. **TestNGXmlGenerator**: Reads the TestcaseToRun.config file and generates a dynamic TestNG XML configuration.
+   - If the config contains "ALL", all test classes and methods are included
+   - If specific methods are listed, only those methods are included
+
+2. **DynamicTestNGListener**: A TestNG listener that applies the dynamic configuration during test execution.
+
+3. **Execution Flow**:
+   - The `run-tests.bat` script first calls TestNGXmlGenerator to create the dynamic-testng.xml file
+   - Then it runs Maven with the generated XML file to execute the tests
+   - This two-step approach prevents duplicate test execution
+
+### Example Configuration
+
+Current TestcaseToRun.config:
+```
+ALL
+```
+
+This configuration will run all test cases because the "ALL" keyword is present.
+
+To run only specific test methods, remove the "ALL" line and list the methods you want to run:
+```
+com.automation.PlaySongWithAutomation.testCase1_OpenWindowsStartMenu
+com.automation.PlaySongWithAutomation.testCase3_SelectSongFile
+```
+
+### Troubleshooting
+
+If you encounter duplicate test executions when running with Maven directly, use the provided `run-tests.bat` script instead, which properly separates the XML generation and test execution phases.
 
 ---
 
