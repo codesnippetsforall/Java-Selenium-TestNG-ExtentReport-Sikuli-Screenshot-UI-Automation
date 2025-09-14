@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="WAMP Automation Suite">
+  <test name="Desktop Automation Tests">
+    <classes>
+      <class name="com.automation.PlaySongWithAutomation">
+        <methods>
+          <include name="testCase1_OpenWindowsStartMenu" />
+          <include name="testCase2_OpenFolderExplorer" />
+          <include name="testCase3_SelectSongFile" />
+        </methods>
+      </class>
+    </classes>
+  </test>
+</suite>
