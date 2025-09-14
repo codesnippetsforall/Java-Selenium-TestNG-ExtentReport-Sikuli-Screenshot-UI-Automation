@@ -1,0 +1,6 @@
+@echo off
+echo Generating dynamic TestNG XML...
+mvn exec:java -Dexec.mainClass="com.automation.TestNGXmlGenerator" -Dexec.classpathScope=test
+
+echo Running tests with dynamic TestNG XML...
+mvn test -DsuiteXmlFile=dynamic-testng.xml -DskipTests=false

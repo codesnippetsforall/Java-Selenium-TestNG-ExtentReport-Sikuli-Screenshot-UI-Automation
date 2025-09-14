@@ -1,0 +1,14 @@
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="WAMP Automation Suite">
+  <test thread-count="5" name="Desktop Automation Tests">
+    <classes>
+      <class name="com.automation.PlaySongWithAutomation">
+        <methods>
+          <include name="testCase3_SelectSongFile"/>
+        </methods>
+      </class> <!-- com.automation.PlaySongWithAutomation -->
+    </classes>
+  </test> <!-- Desktop Automation Tests -->
+</suite> <!-- WAMP Automation Suite -->

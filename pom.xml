@@ -70,6 +70,14 @@
       <version>7.8.0</version>
       <scope>test</scope>
     </dependency>
+    
+    <!-- Reflections for scanning test classes -->
+    <dependency>
+      <groupId>org.reflections</groupId>
+      <artifactId>reflections</artifactId>
+      <version>0.10.2</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -105,10 +113,17 @@
           <version>3.0.0</version>
           <configuration>
             <useSystemClassLoader>false</useSystemClassLoader>
-            <!-- TestNG specific configuration -->
-            <suiteXmlFiles>
-              <suiteXmlFile>testng.xml</suiteXmlFile>
-            </suiteXmlFiles>
+            <!-- Use dynamic TestNG XML generation -->
+            <properties>
+              <property>
+                <name>listener</name>
+                <value>com.automation.DynamicTestNGListener</value>
+              </property>
+            </properties>
+            <!-- Use the dynamic TestNG XML file -->
+            <!--<suiteXmlFiles>
+              <suiteXmlFile>dynamic-testng.xml</suiteXmlFile>
+            </suiteXmlFiles>-->
           </configuration>
         </plugin>
         <plugin>
@@ -134,5 +149,27 @@
         </plugin>
       </plugins>
     </pluginManagement>
+    
+    <plugins>
+      <!-- Add exec plugin to run the TestNGXmlGenerator before tests -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <execution>
+            <id>generate-testng-xml</id>
+            <phase>test-compile</phase>
+            <goals>
+              <goal>java</goal>
+            </goals>
+            <configuration>
+              <mainClass>com.automation.TestNGXmlGenerator</mainClass>
+              <classpathScope>test</classpathScope>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
   </build>
 </project>
